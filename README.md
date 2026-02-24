@@ -18,8 +18,11 @@ USE_BROWSERSTACK=true
 Create a .env file in the root directory:
 
 BROWSERSTACK_USERNAME=your_username_here
+
 BROWSERSTACK_ACCESS_KEY=your_access_key_here
+
 RAPIDAPI_KEY=your_api_key_here
+
 USE_BROWSERSTACK=true     # ⚠️ Keep this line in .env by default
 
 Then install dependencies and run:
