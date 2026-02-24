@@ -1,0 +1,20 @@
+2026-02-23 23:05:57 - [34mdebug[39m: Could not locate npm module path with error  Cannot access 'isYarnPnP' before initialization
+2026-02-23 23:05:59 - [32minfo[39m: Creating configuration file...
+2026-02-23 23:05:59 - [34mdebug[39m: requireModuleV3 :: module - @playwright/test/package.json, package - @playwright/test
+2026-02-23 23:05:59 - [34mdebug[39m: Unable to resolve module with requireModuleV3 with error: Error: Cannot find module '@playwright/test'
+Require stack:
+- D:\project\node_modules\browserstack-node-sdk\src\helpers\helper.js
+- D:\project\node_modules\browserstack-node-sdk\src\bin\setup.js
+2026-02-23 23:05:59 - [34mdebug[39m: requireModuleV2 :: module - @playwright/test/package.json, package - @playwright/test
+2026-02-23 23:05:59 - [34mdebug[39m: Getting @playwright/test/package.json from D:\project
+2026-02-23 23:05:59 - [34mdebug[39m: @playwright/test/package.json doesn't exist at D:\project
+2026-02-23 23:05:59 - [34mdebug[39m: Getting @playwright/test/package.json from null
+2026-02-23 23:05:59 - [34mdebug[39m: Error while loading package. Error: @playwright/test/package.json doesn't exist.
+2026-02-23 23:05:59 - [34mdebug[39m: requireModuleV3 :: module - selenium-webdriver/package.json, package - selenium-webdriver
+2026-02-23 23:05:59 - [34mdebug[39m: Resolved from resolveModuleV3 :: Path - D:\project\node_modules\selenium-webdriver\package.json
+2026-02-23 23:05:59 - [34mdebug[39m: Firing SDK event for funnel data: {"userName":"[REDACTED]","accessKey":"[REDACTED]","event_type":"SDKSetup","detectedFramework":"","optimalHubUrl":[],"event_properties":{"testhub_uuid":"","product_map":{"observability":true,"accessibility":false,"percy":false,"automate":true,"app_automate":false,"lts":false,"central_scanner":false,"lcnc":false},"productMap":{"observability":true,"accessibility":false,"percy":false,"automate":true,"app_automate":false,"lts":false,"central_scanner":false,"lcnc":false},"language_framework":"node-setup","referrer":"nodeagent/1.49.11","frameworkVersion":null,"automationFramework":"selenium","automationFrameworkVersion":"4.41.0","language":"nodejs","languageVersion":"v24.13.1","product":["automate","observability"],"buildName":"browserstack build","buildIdentifier":"#${BUILD_NUMBER}","os":"Windows_NT","hostname":"Brainy","seleniumVersion":"4.41.0"}}
+2026-02-23 23:06:03 - [32minfo[39m: Adding new script(s) in package.json...
+2026-02-23 23:06:03 - [32minfo[39m: Setup completed
+2026-02-23 23:06:03 - [34mdebug[39m: Sending request to https://api.browserstack.com/sdk/v1/event
+2026-02-23 23:06:03 - [34mdebug[39m: Response from https://api.browserstack.com/sdk/v1/event: 200 OK
+2026-02-23 23:06:03 - [34mdebug[39m: API Event SDKSetup response - {"data":{"message":"SDK Event recorded successfully"},"body":"{\"message\":\"SDK Event recorded successfully\"}","statusCode":200}
