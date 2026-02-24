@@ -1,0 +1,1 @@
+This folder stores dynamically downloaded article images.
