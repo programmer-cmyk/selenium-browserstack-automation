@@ -13,7 +13,7 @@ BROWSERSTACK_ACCESS_KEY
 
 RAPIDAPI_KEY
 
-USE_BROWSERSTACK=true
+USE_BROWSERSTACK=false
 
 Create a .env file in the root directory:
 
@@ -23,13 +23,13 @@ BROWSERSTACK_ACCESS_KEY=your_access_key_here
 
 RAPIDAPI_KEY=your_api_key_here
 
-USE_BROWSERSTACK=true     # ⚠️ Keep this line in .env by default
+USE_BROWSERSTACK=false     # ⚠️ Keep this line in .env by default
 
 Then install dependencies and run:
 
 npm install
 
-If running locally then: node scrapper.js
+If running locally then: npm run local
 
 If running on browserstack then : npm run scraper-browserstack
 
@@ -60,3 +60,24 @@ Counts occurrences
 Filters meaningful keywords
 
 This provides insights into trending themes within the scraped news content.
+
+💻 Execution Details
+
+Locally, I ran the scraper on 1 thread using Chrome, successfully extracting and translating articles.
+
+On BrowserStack, I performed 5-threaded testing across multiple devices and browsers:
+
+Chrome
+
+Edge
+
+Firefox
+
+Safari
+
+Samsung Galaxy S22
+
+This allowed cross-browser verification of the scraping and translation logic in parallel sessions.
+⚠️ Note: Since these tests run in parallel, the order of execution may vary—sometimes a Chrome test might finish first, other times Firefox or Edge might complete before it.
+To avoid confusion, each translated title is prefixed with the corresponding **browser or device label** (e.g., `[chrome]`, `[firefox]`.etc ) to clearly indicate which session produced it.
+
