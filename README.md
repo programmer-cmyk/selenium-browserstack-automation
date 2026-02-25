@@ -78,6 +78,7 @@ Safari
 Samsung Galaxy S22
 
 This allowed cross-browser verification of the scraping and translation logic in parallel sessions.
+
 ⚠️ Note: Since these tests run in parallel, the order of execution may vary—sometimes a Chrome test might finish first, other times Firefox or Edge might complete before it.
 To avoid confusion, each translated title is prefixed with the corresponding **browser or device label** (e.g., `[chrome]`, `[firefox]`.etc ) to clearly indicate which session produced it.
 
