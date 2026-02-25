@@ -6,18 +6,18 @@ platforms:
     osVersion: 10
     browserName: Chrome
     browserVersion: '120.0'
-  - os: OS X
-    osVersion: Monterey
-    browserName: Safari
-    browserVersion: '15.6'
-  - deviceName: iPhone 13
-    osVersion: 15
-    browserName: Chromium
-    deviceOrientation: 'portrait'
   - os: Windows
     osVersion: 11
     browserName: Edge
     browserVersion: '116.0'
+  - os: Windows
+    osVersion: 11
+    browserName: Firefox
+    browserVersion: '116.0'
+  - os: OS X
+    osVersion: Monterey
+    browserName: Safari
+    browserVersion: '15.6'
   - deviceName: Samsung Galaxy S22
     osVersion: 12
     browserName: Chrome
