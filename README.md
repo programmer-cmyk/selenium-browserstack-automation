@@ -89,3 +89,5 @@ ERROR:net\socket\ssl_client_socket_impl.cc:918
 
 These are internal Chrome/DevTools or network-related warnings and do not affect scraping, translation, or word frequency analysis.
 
+* Also there while testing 5 threads (on browserstack) the total images will be more than 5 as each browser or session will scrap 5 images each.
+* While testing locally it generats only 5 images as only chorme is used.
