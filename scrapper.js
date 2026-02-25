@@ -1,15 +1,19 @@
 require("dotenv").config();
 const { Builder, By, until } = require("selenium-webdriver");
-const chrome = require("selenium-webdriver/chrome");
+
+// ⭐ ADD THESE 2 LINES
+require("chromedriver");
+require("geckodriver");
+
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
-const USE_BROWSERSTACK = process.env.USE_BROWSERSTACK === "true";
 
 if (!fs.existsSync("images")) fs.mkdirSync("images");
 
+// -------- TRANSLATION --------
 async function translateText(text) {
   try {
     const response = await axios.post(
@@ -29,78 +33,75 @@ async function translateText(text) {
   }
 }
 
-async function downloadImage(url, filename) {
+// -------- IMAGE DOWNLOAD --------
+async function downloadImage(url, filename, sessionName) {
   try {
     const response = await axios({ url, method: "GET", responseType: "stream" });
     const writer = fs.createWriteStream(path.join("images", filename));
     response.data.pipe(writer);
+
     return new Promise((resolve, reject) => {
-      writer.on("finish", resolve);
+      writer.on("finish", () => {
+        console.log(`[${sessionName}] 📸 Image saved: ${filename}`);
+        resolve();
+      });
       writer.on("error", reject);
     });
   } catch {
-    console.log("⚠ Image download failed");
+    console.log(`[${sessionName}] ⚠ Image download failed`);
   }
 }
 
-async function scrapeElPais() {
-  console.log("🚀 Starting scraper...");
+// -------- MAIN TEST FUNCTION --------
+async function runTest(capability = {}) {
+  const sessionName =
+    capability?.["bstack:options"]?.sessionName ||
+    capability?.browserName ||
+    "LOCAL";
+
+  console.log(`\n🚀 [${sessionName}] Starting test...`);
+
   let driver;
 
-  if (USE_BROWSERSTACK) {
-    console.log("🌍 Running on BrowserStack...");
-
-    const capabilities = {
-      "bstack:options": {
-        userName: process.env.BROWSERSTACK_USERNAME,
-        accessKey: process.env.BROWSERSTACK_ACCESS_KEY,
-        buildName: "ElPais Scraper Build",
-        projectName: "ElPais Scraper",
-        sessionName: "Opinion Articles Scraper",
-      },
-      browserName: "Chrome",
-      browserVersion: "latest",
-    };
-
-    driver = await new Builder()
-      .usingServer("https://hub-cloud.browserstack.com/wd/hub")
-      .withCapabilities(capabilities)
-      .build();
-  } else {
-    console.log("🌍 Running locally...");
-
-    const options = new chrome.Options();
-    options.addArguments("--start-maximized");
-    options.addArguments("--disable-blink-features=AutomationControlled");
-
-    driver = await new Builder()
-      .forBrowser("chrome")
-      .setChromeOptions(options)
-      .build();
-  }
-
   try {
-    console.log("🌐 Opening Opinion page...");
+    const useBrowserStack = process.env.USE_BROWSERSTACK === "true";
+
+    // ⭐ LOCAL vs BROWSERSTACK SWITCH (same logic everywhere)
+    if (useBrowserStack) {
+      console.log(`[${sessionName}] 🌐 Running on BrowserStack...`);
+
+      driver = await new Builder()
+        .usingServer(
+          `https://${process.env.BROWSERSTACK_USERNAME}:${process.env.BROWSERSTACK_ACCESS_KEY}@hub-cloud.browserstack.com/wd/hub`
+        )
+        .withCapabilities(capability)
+        .build();
+    } else {
+      console.log(`[${sessionName}] 💻 Running locally...`);
+
+      driver = await new Builder()
+        .forBrowser(capability.browserName)
+        .build();
+    }
+
+    console.log(`[${sessionName}] Opening Opinion page...`);
+
     await driver.get("https://elpais.com/opinion/");
     await driver.wait(until.titleContains("EL PAÍS"), 20000);
-    console.log("✅ Page loaded");
 
-    // Accept cookies if present
+    // Accept cookies
     try {
       const acceptBtn = await driver.wait(
         until.elementLocated(By.css("button[aria-label='Aceptar']")),
         5000
       );
       await acceptBtn.click();
-      console.log("🍪 Cookies accepted");
+      console.log(`[${sessionName}] 🍪 Cookies accepted`);
     } catch {
-      console.log("No cookie popup");
+      console.log(`[${sessionName}] No cookie popup`);
     }
 
-    await driver.wait(
-      until.elementsLocated(By.css("article h2 a")),
-      20000
-    );
+    await driver.wait(until.elementsLocated(By.css("article h2 a")), 20000);
 
     const linkElements = await driver.findElements(By.css("article h2 a"));
 
@@ -115,7 +116,7 @@ async function scrapeElPais() {
       }
     }
 
-    console.log(`🔎 Found ${candidateLinks.length} candidate links`);
+    console.log(`[${sessionName}] Found ${candidateLinks.length} article links`);
 
     let validCount = 0;
     let translatedHeaders = [];
@@ -125,34 +126,29 @@ async function scrapeElPais() {
 
       await driver.get(candidateLinks[i]);
 
-      // Wait for title
       let titleElement;
       try {
         titleElement = await driver.wait(
           until.elementLocated(By.css("h1")),
           20000
         );
-        await driver.wait(until.elementIsVisible(titleElement), 10000);
       } catch {
-        continue; // silent skip
+        continue;
       }
 
       const title = (await titleElement.getText()).trim();
       if (!title) continue;
 
-      // Scroll to load content
-      await driver.executeScript("window.scrollTo(0, document.body.scrollHeight/3)");
-      await driver.sleep(2000);
+      await driver.executeScript(
+        "window.scrollTo(0, document.body.scrollHeight/3)"
+      );
+      await driver.sleep(1000);
 
       let paragraphs;
       try {
-        await driver.wait(
-          until.elementsLocated(By.css("article p")),
-          20000
-        );
         paragraphs = await driver.findElements(By.css("article p"));
       } catch {
-        continue; // silent skip
+        continue;
       }
 
       let content = "";
@@ -170,94 +166,96 @@ async function scrapeElPais() {
 
       if (!content.trim()) continue;
 
-      // ✅ NOW we print because article is VALID
       validCount++;
 
-      console.log("\n==============================");
-      console.log(`📰 Valid Article #${validCount}`);
-      console.log("==============================");
+      console.log("\n=====================================");
+      console.log(`[${sessionName}] 📰 Article #${validCount}`);
+      console.log("=====================================");
 
-      console.log("Title:", title);
-      console.log("\n📄 Full Content:\n");
-      console.log(content);
+      console.log(`[${sessionName}] Title: ${title}`);
+      console.log(`[${sessionName}] Content:\n${content}`);
 
-      // Image download
+      // Download image
       try {
         const img = await driver.findElement(By.css("figure img"));
         const imgUrl = await img.getAttribute("src");
+
         if (imgUrl && imgUrl.startsWith("http")) {
-          await downloadImage(imgUrl, `article_${validCount}.jpg`);
-          console.log("📸 Image downloaded");
+          const safeSession = sessionName.replace(/\s+/g, "_");
+          await downloadImage(
+            imgUrl,
+            `${safeSession}_article_${validCount}.jpg`,
+            sessionName
+          );
         }
       } catch { }
 
+      // Translate title
       const translated = await translateText(title);
       translatedHeaders.push(translated);
-      console.log("🌍 Translated Title:", translated);
+
+      console.log(`[${sessionName}] 🌍 Translated: ${translated}`);
     }
 
-    console.log("\n🔎 Word Frequency Analysis:\n");
-
-    // Combine all translated titles
+    // -------- WORD ANALYSIS --------
     const combinedText = translatedHeaders.join(" ").toLowerCase();
+    const words = combinedText.replace(/[^\w\s]/g, "").split(/\s+/);
 
-    // Clean punctuation and split into words
-    const words = combinedText
-      .replace(/[^\w\s]/g, "")
-      .split(/\s+/);
-
-    // Count words
     const wordCount = {};
 
     for (let word of words) {
-      if (word.length > 2) {  // ignore very small words like "a", "to", etc.
+      if (word.length > 2) {
         wordCount[word] = (wordCount[word] || 0) + 1;
       }
     }
 
-    // Filter words repeated more than twice
-    const repeatedWords = Object.entries(wordCount)
-      .filter(([word, count]) => count > 2);
+    const repeatedWords = Object.entries(wordCount).filter(
+      ([word, count]) => count > 2
+    );
+
+    console.log(`\n[${sessionName}] 🔎 Word Frequency Analysis:`);
 
     if (repeatedWords.length === 0) {
-      console.log("No words repeated more than twice.");
+      console.log(`[${sessionName}] No words repeated more than twice.`);
     } else {
-      repeatedWords.forEach(([word, count]) => {
-        console.log(`Word: "${word}" → Count: ${count}`);
-      });
+      repeatedWords.forEach(([word, count]) =>
+        console.log(`[${sessionName}] ${word}: ${count}`)
+      );
     }
-    if (USE_BROWSERSTACK) {
+
+    console.log(`✅ [${sessionName}] Test completed`);
+
+    // ⭐ Tell BrowserStack test passed
+    if (process.env.USE_BROWSERSTACK === "true") {
       await driver.executeScript(
-        'browserstack_executor: ' +
+        "browserstack_executor: " +
         JSON.stringify({
-          action: 'setSessionStatus',
+          action: "setSessionStatus",
           arguments: {
-            status: 'passed',
-            reason: 'Scraping completed successfully',
+            status: "passed",
+            reason: "Scraping completed successfully",
           },
         })
       );
     }
-
-    console.log("\n✅ Scraping Completed Successfully!");
   } catch (err) {
-    if (USE_BROWSERSTACK) {
+    console.error(`[${sessionName}] ❌ Error:`, err.message);
+
+    if (driver && process.env.USE_BROWSERSTACK === "true") {
       await driver.executeScript(
-        'browserstack_executor: ' +
+        "browserstack_executor: " +
         JSON.stringify({
-          action: 'setSessionStatus',
+          action: "setSessionStatus",
           arguments: {
-            status: 'failed',
+            status: "failed",
             reason: err.message,
           },
         })
       );
     }
-
-    console.error("❌ Scraping failed:", err);
   } finally {
-    await driver.quit();
+    if (driver) await driver.quit();
   }
 }
 
-scrapeElPais();
+module.exports = runTest;

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "npm update browserstack-node-sdk",
-    "scraper-browserstack": "cross-env USE_BROWSERSTACK=true node scrapper.js"
+    "local": "cross-env USE_BROWSERSTACK=false node parallelRunner.js",
+    "scraper-browserstack": "cross-env USE_BROWSERSTACK=true node parallelRunner.js"
   },
   "keywords": [],
   "author": "",
