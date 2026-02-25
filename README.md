@@ -82,3 +82,10 @@ This allowed cross-browser verification of the scraping and translation logic in
 ⚠️ Note: Since these tests run in parallel, the order of execution may vary—sometimes a Chrome test might finish first, other times Firefox or Edge might complete before it.
 To avoid confusion, each translated title is prefixed with the corresponding **browser or device label** (e.g., `[chrome]`, `[firefox]`.etc ) to clearly indicate which session produced it.
 
+While running the scraper locally or on BrowserStack, you may see messages like:
+
+ERROR:google_apis\gcm\engine\registration_request.cc:290
+ERROR:net\socket\ssl_client_socket_impl.cc:918
+
+These are internal Chrome/DevTools or network-related warnings and do not affect scraping, translation, or word frequency analysis.
+
